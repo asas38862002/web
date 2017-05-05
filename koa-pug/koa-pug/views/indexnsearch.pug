@@ -1,0 +1,96 @@
+html
+	head
+		
+		script(src='//maps.googleapis.com/maps/api/js?key=AIzaSyBlu_A9t8jtS_EQFIa17CMhygQtQ63FLwg&callback=initialize' async='' defer='defer' type='text/javascript')
+		script(type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+		
+		//script(src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=initialize")
+		script(src='//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js')
+		script(type='text/javascript' src='http://canvasjs.com/assets/script/canvasjs.min.js')
+		title Earthquake System
+		meta(charset="utf-8")
+		link(rel='stylesheet' type='text/css' href='/css/print.css' media='print')
+		link(rel='stylesheet' type='text/css' href='/css/styles.css' media='screen')
+	body
+		div(id='wrapper')
+			header
+				h1
+					a(href='http://140.118.127.70:3001') system
+			nav
+				div(class='menu')
+					ul
+						li
+							span(class="divider") |
+						li
+							a(href='http://140.118.127.70:3001') Search Events
+								span(class="divider") |
+						li
+							a(href='http://140.118.127.70:3001/sensors') Realdata
+								span(class="divider") |
+		section(id="main")
+				aside(id="sidebar")
+					article
+						h2 Search Events
+							form#sensor(ACTION="/" method="get")
+								h Year:
+								select(NAME="year" id="year")  //select element
+									each sensor in ["2016", "2017"]								
+										option(TYPE=TEXT NAME="Year" value=sensor) #{sensor}
+								h Mon:		
+								select(NAME="mon" id="mon") //select element
+									each sensor in ["1", "2","3","4","5","6","7","8","9","10","11","12"]
+										option(TYPE=TEXT NAME="Mon" value=sensor) #{sensor}
+								h Day:
+								select(NAME="day" id="day") //select element
+									each sensor in ["1","2","3","4","5","6","7","8","9","10","11","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
+										option( value=sensor) #{sensor}										
+								input(type="submit" NAME="type" value="Submit" style="height:30px ; width:100px ; font-size:20px" )
+						table(id='mytable')
+							h2 #{eventlinks[0].Event}
+							tr(height="50px")
+								th
+									font_in_th Numbering
+								th
+									font_in_th Event Time								
+								th
+									font_in_th Dep
+								th
+									font_in_th Mpd
+								th
+									font_in_th senCt
+
+								
+				section(id="content")
+					h3 Location
+					style(type="text/css")
+						#container { height: 60%;width:30%;float:right; position:relative; top:20px; }
+						#googleMap { max-width: none ;}
+						#word { height: 0px;width:80px; position:relative; left 400px; font-weight:bolder;}
+						.gm-style-iw + div {display: none;}
+					div(id="googleMap")
+		script.
+				$('form#sensor').submit(function (e) {
+					//e.preventDefault();
+				});
+				
+		script.
+			var sizew = 20 ;
+			var sizeh = 20 ;
+			var marks = [] ; //each sensor mark
+			var locationmarks = [] ; // location mark
+			var myLatLng = {lat: 23.500, lng: 120.700};
+			
+
+			function initialize()
+			{
+				var map =new google.maps.Map(document.getElementById("googleMap"),
+				{
+					center:myLatLng,
+					zoom:7,//越小越遠
+					mapTypeId:google.maps.MapTypeId.SATELLITE/*HYBRID*/
+				});						
+			}//initialize()
+			
+			google.maps.event.addDomListener(window, 'load', initialize);				
+			
+		

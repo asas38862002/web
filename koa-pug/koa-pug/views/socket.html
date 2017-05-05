@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
+  	<div id="chartContainer" style="height: 300px; width:100%;">
+	</div>
+  </head>
+  <body>
+    <script type="text/javascript">
+	window.onload = function () {
+
+		var dps = []; // dataPoints
+
+		var chart = new CanvasJS.Chart("chartContainer",{
+			title :{
+				text: "Live waveform"
+			},			
+			data: [{
+				type: "line",
+				dataPoints: dps 
+			}]
+		});
+
+		var xVal = 1/120;
+		var yVal = 100;	
+		var updateInterval = 1000;
+		var dataLength = 10; // number of dataPoints visible at any point
+		var county = 0 ;
+		var updateChart = function (count) {
+			count = count || 1;
+			// count is number of times loop runs to generate random dataPoints.
+			
+			for (var j = 0; j < count; j++) {	
+				yVal = num[j];
+				dps.push({
+					x: xVal,
+					y: num[county]
+				});
+				xVal = xVal + 1/120;
+				//xVal++;
+				county = (county + 1) % 100 ; //num add 10 to 100 and mod 100
+				
+			};
+			//console.log('num.length/2= '+dps.length/2);
+			if (dps.length > 1000)
+			{
+				for (var j = 0; j < 10; j++)
+				dps.shift();				
+			}
+			chart.render();		
+		};
+
+		// generates first set of dataPoints
+		updateChart(dataLength); 
+
+		// update chart after specified time. 
+		setInterval(function(){updateChart(dataLength)}, 100); 
+
+	}
+	  
+    </script>
+    <div id="date"></div>
+  </body>
+</html>

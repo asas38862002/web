@@ -1,0 +1,316 @@
+html
+	head
+		
+		script(src='//maps.googleapis.com/maps/api/js?key=AIzaSyBlu_A9t8jtS_EQFIa17CMhygQtQ63FLwg&callback=initialize' async='' defer='defer' type='text/javascript')
+		script(type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+		
+		//script(src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=initialize")
+		script(src='//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js')
+		script(type='text/javascript' src='http://canvasjs.com/assets/script/canvasjs.min.js')
+		title Earthquake System
+		meta(charset="utf-8")
+		link(rel='stylesheet' type='text/css' href='/css/print.css' media='print')
+		link(rel='stylesheet' type='text/css' href='/css/styles.css' media='screen')
+	body
+		div(id='wrapper')
+			header
+				h1
+					a(href='http://140.118.127.70:3001') system
+			nav
+				div(class='menu')
+					ul
+						li
+							span(class="divider") |
+						li
+							a(href='http://140.118.127.70:3001') Search Events
+								span(class="divider") |
+						li
+							a(href='http://140.118.127.70:3001/sensors') Realdata
+								span(class="divider") |
+		section(id="main")
+				aside(id="sidebar")
+					article
+						h2 Search Events
+							form#sensor(ACTION="/" method="get")
+								h Year:
+								select(NAME="year" id="year")  //select element
+									each sensor in ["2016", "2017"]								
+										option(TYPE=TEXT NAME="Year" value=sensor) #{sensor}
+								h Mon:		
+								select(NAME="mon" id="mon") //select element
+									each sensor in ["1", "2","3","4","5","6","7","8","9","10","11","12"]
+										option(TYPE=TEXT NAME="Mon" value=sensor) #{sensor}
+								h Day:
+								select(NAME="day" id="day") //select element
+									each sensor in ["1","2","3","4","5","6","7","8","9","10","11","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
+										option( value=sensor) #{sensor}										
+								input(type="submit" NAME="type" value="Submit" style="height:30px ; width:100px ; font-size:20px" )
+						table
+							tr(height="50px")
+								td
+									font_in_th Reporting time
+									table(id='mytable')
+										th
+											font_in_th Year
+										th
+											font_in_th Month								
+										th
+											font_in_th Day
+										th
+											font_in_th Hour
+										th
+											font_in_th Minute
+										th
+											font_in_th Second
+										th
+											font_in_th Lat
+										th
+											font_in_th Lon
+										th
+											font_in_th Dep										
+										th
+											font_in_th Mpd
+										tr.sensorRow()
+											td #{eventlinks[0].Year}
+											td #{eventlinks[0].Mon}
+											td #{eventlinks[0].Day}
+											td #{eventlinks[0].Hur}
+											td #{eventlinks[0].Min}
+											td #{eventlinks[0].Sec}
+											td(id='epicenterLoc') #{eventlinks[0].Loc}
+											td(id='epicenterLat') #{eventlinks[0].Lon}
+											td #{eventlinks[0].Dep}
+											td #{eventlinks[0].Mpd}
+						table
+							tr(height="50px")
+								td
+									font_in_th Trigger Station
+									table(id='waveinfo')
+										th
+											font_in_th ＼
+										th
+											font_in_th Station								
+										th
+											font_in_th Lat
+										th
+											font_in_th Lon
+										th
+											font_in_th MPd
+										th
+											font_in_th RecieveT									
+										each sensor, i in sensors	
+											tr.sensorRow
+												td #{sensor.Num}
+												td(id='sensorname_'+i) #{sensor.Station}
+												td(id='sensorLoc_' +i) #{sensor.Lat}
+												td(id='sensorLat_' +i) #{sensor.Lon}
+												td(id='sensorMPd_' +i) #{sensor.MPd}
+												td(id='sensorRT_'  +i) #{sensor.RT}
+					each sensor, i in sensors	
+						- var url = "http://140.118.127.71/earthquake/others/System/web/src/chartold/chart.php?name="+sensor.Station+"&path="+filedir[0].dir+"&type=SR&trigger=1"
+						iframe(id='ifr' src=url width="700px" height="480px" overflow:hidden)
+				section(id="content")
+					h3 Location
+					style(type="text/css")
+						#container { height: 60%;width:30%;float:right; position:relative; top:20px; }
+						#googleMap { max-width: none ;}
+						#word { height: 0px;width:80px; position:relative; left 400px; font-weight:bolder;}
+						.gm-style-iw + div {display: none;}
+					div(id="googleMap")
+					
+		script.async defer	(src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkUOdZ5y7hMm0yrcCQoCvLwzdM6M8s5qk&callback=initMap")	
+					
+		script.
+				$('form#sensor').submit(function (e) {
+					//e.preventDefault();
+				});
+				
+		script.
+			var sizew = 20 ;
+			var sizeh = 20 ;
+			var marks = [] ; //each sensor mark
+			var locationmarks = [] ; // location mark
+			var loc_ep = $("#epicenterLoc").text();
+			var lat_ep = $("#epicenterLat").text();
+			//console.log('loc= '+parseFloat(loc_ep)+' '+'lat= '+parseFloat(lat_ep));
+			var myLatLng = {lat: parseFloat(loc_ep), lng: parseFloat(lat_ep)};
+			var cityCircle;
+			var radius = 0;
+			var service = new google.maps.DistanceMatrixService;
+			var index = 0 ;
+			var dis   = 0 ;
+			var disr      ;
+			var place ='';
+			function initialize()
+			{
+				var map =new google.maps.Map(document.getElementById("googleMap"),
+				{
+					center:myLatLng,
+					zoom:10,//越小越遠
+					mapTypeId:google.maps.MapTypeId.SATELLITE/*HYBRID*/
+				});	
+				var image_location =new google.maps.MarkerImage(
+					'/palert.png',
+					null, /* size is determined at runtime */
+					null, /* origin is 0,0 */
+					null, /* anchor is bottom center of the scaled image */
+					new google.maps.Size(30,30)
+				);
+				var image_epicenter =new google.maps.MarkerImage(
+					'/yellowstar.png',
+					null, /* size is determined at runtime */
+					null, /* origin is 0,0 */
+					null, /* anchor is bottom center of the scaled image */
+					new google.maps.Size(30,30)
+				);			
+
+				for(var i = 0; i<20; i++){
+				
+					var sensor_lat  =$( "#sensorLoc_" +i ).text();
+					var sensor_lon  =$( "#sensorLat_" +i ).text();
+					var sensor_name =$( "#sensorname_"+i ).text();
+					//console.log(sensor_name);
+					if(sensor_lat!='')
+					{
+						var marker_location = new google.maps.Marker({
+							position: new google.maps.LatLng(sensor_lat,sensor_lon),
+							map: map,
+							icon: image_location,
+							title: sensor_name,
+							lat:sensor_lat,
+							lon:sensor_lon
+						});	
+						marks.push(marker_location);// push mark infomation
+					}
+				
+				}
+
+				/*var marker_location = new google.maps.Marker({
+					position: new google.maps.LatLng(loc_ep,lat_ep),
+					map: map,
+					icon: image_epicenter,
+					title: 'epicenter' 
+				});	*/
+				var geocoder = new google.maps.Geocoder;
+				var infowindow = new google.maps.InfoWindow;
+				geocodeLatLng(geocoder, map, infowindow,image_epicenter);
+
+				cityCircle = new google.maps.Circle({
+				  strokeColor: '#000000',
+				  strokeOpacity: 0.8,
+				  strokeWeight: 2,
+				  fillColor: '#FF0000',
+				  fillOpacity: 0.25,
+				  map: map,
+				  center: myLatLng,
+				  radius: 0
+				});
+		
+			}//initialize()
+					
+			google.maps.event.addDomListener(window, 'load', initialize);				
+			
+			function geocodeLatLng(geocoder, map, infowindow,Image) {
+				var len = []; //save lenth of sensor to e ;
+				var blength = 0 ; //get big length
+				var latlng = {lat: parseFloat(loc_ep), lng: parseFloat(lat_ep)};
+				geocoder.geocode({'location': latlng}, function(results, status) {
+					if (status === 'OK') {
+						console.log(results[1]);
+						//  console.log(results[1].address_components[2].short_name+results[1].address_components[1].short_name);
+						if (results[1]) {
+						//map.setZoom(11);
+						//	var place = results[1].address_components[2].short_name+results[1].address_components[1].short_name;
+							
+							if(results[1].address_components.length>=2)
+							{
+								place = results[1].address_components[2].short_name+results[1].address_components[1].short_name;
+							}
+							else
+							{
+								place = results[1].formatted_address;
+							}
+							var marker = new google.maps.Marker({
+								  position: latlng,
+								  icon: Image,
+								  map: map
+							});
+							infowindow.setContent('Epicenter: '+place);
+							infowindow.open(map, marker);
+						} else {
+							//window.alert('No results found');
+							var marker = new google.maps.Marker({
+								  position: latlng,
+								  icon: Image,
+								  map: map
+							});
+							infowindow.setContent('Epicenter: '+place);
+							infowindow.open(map, marker);							
+						}
+					}
+					else {
+							var marker = new google.maps.Marker({
+								  position: latlng,
+								  icon: Image,
+								  map: map
+							});						
+						//window.alert('Geocoder failed due to: ' + status);
+							infowindow.setContent('Epicenter: '+place);
+							infowindow.open(map, marker);	
+					}
+				});
+				
+				for(var i = 0 ;i<marks.length ; i++)
+				{
+					var x = marks[i].lat - parseFloat(loc_ep) ;
+					var y = marks[i].lon - parseFloat(lat_ep) ;
+					len[i] = Math.sqrt(Math.pow(x, 2)+ Math.pow(y, 2));
+					if(blength<len[i])
+					{
+						blength = len[i];
+						index = i ;
+						//console.log('i= '+i);
+						//console.log(marks[i].lat);
+						//console.log(marks[i].lon);						
+					}//count len choose max					
+				}	//
+				
+				//console.log(getdistance(parseFloat(loc_ep),parseFloat(lat_ep),marks[index].lat,marks[index].lon));
+				dis = getdistance(parseFloat(loc_ep),parseFloat(lat_ep),marks[index].lat,marks[index].lon) ;
+				disr = dis/4 ;
+				console.log(radius );
+				
+				setInterval(function(){
+					//console.log(cityCircle.radius);
+					
+					cityCircle.setRadius(radius);
+					radius = radius + disr;
+					radius = radius%(dis+disr); 
+					//radius = radius %21000 ;
+					//cityCircle.radius = radius ;
+				}, 1000); 			  
+			  
+			}//geocodeLatLng fuction		
+
+			function rad (angle) {
+				return (angle / 180) * Math.PI;
+			}
+
+			
+			function getdistance( lat1,  lng1,  lat2,  lng2)
+			{
+				var radLat1 = rad(lat1);
+				var radLat2 = rad(lat2);
+				var a = radLat1 - radLat2;
+				var b = rad(lng1) - rad(lng2);
+				var s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2) +
+				Math.cos(radLat1)*Math.cos(radLat2)*Math.pow(Math.sin(b/2),2)));
+				s = s *6378.137 ;// EARTH_RADIUS;
+				s = Math.round(s * 10000) / 10000;
+				s = s *1000 ;
+				return s;
+			}
+		
+
+		
+		

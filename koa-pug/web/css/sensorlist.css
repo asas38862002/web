@@ -1,0 +1,36 @@
+table{
+	
+	border: 1px solid black;
+	border-collapse: collapse;
+	width:1000px;
+	text-align: center; /*文字置中對齊*/
+	vertical-align: middle; /*垂直置中對齊*/
+	
+	
+}
+
+td,th{
+	
+	border: 1px solid black;
+	border-collapse: collapse;
+	height:35px;
+	text-align: center; /*文字置中對齊*/
+	vertical-align: middle; /*垂直置中對齊*/
+	background-color: #FFEEDD;
+}
+
+/*tr:nth-child(even){background-color: #FFD1A4}*/
+
+th {
+    background-color: #FFE4CA;
+    color: black;
+}
+font_in_th{
+	font-size:20px;
+	
+}
+font_in_table{
+	
+	font-size:12px;
+	
+}

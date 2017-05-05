@@ -1,0 +1,540 @@
+html
+	head
+		title My Site
+		meta(charset="utf-8")
+		meta(name="viewport" content="initial-scale=1.0, user-scalable=no")
+		script(src='//maps.googleapis.com/maps/api/js?key=AIzaSyBlu_A9t8jtS_EQFIa17CMhygQtQ63FLwg' async='' defer='defer' type='text/javascript')
+		script(type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+		script(src='//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js')
+		script(type='text/javascript' src='http://canvasjs.com/assets/script/canvasjs.min.js')
+		
+		link(rel='stylesheet' type='text/css' href='/css/print.css' media='print')
+		link(rel='stylesheet' type='text/css' href='/css/styles.css' media='screen')
+	body
+		div(id='wrapper') 
+			header
+				h1
+					a(href='http://140.118.127.70:3001') system
+			nav
+				div(class='menu')
+					ul
+						li
+							span(class="divider") |
+						li
+							a(href='http://140.118.127.70:3001') Search Events
+								span(class="divider") |			
+						li
+							a(href='http://140.118.127.70:3001/sensors') Realdata
+								span(class="divider") |		
+			div(id='chartContainer' style='height: 300px; width:100%;')
+
+
+
+			
+		section(id="main")
+			aside(id="sidebar")
+				article
+					h2 Sensor List
+					form#sensor
+						select(id="sensorsel") //select element
+							//for loop for [name1,name2,name3]
+							each sensor, i in ["全部地點", "台南", "屏東","高雄","花蓮","宜蘭","南投","台北","新北","台東","苗栗","台中","嘉義","新竹","基隆","桃園","彰化","雲林"]
+								option(value=sensor) #{sensor}
+							//each value in ["L001", "L002", "L003"]
+								//value1 is element. value2 is substitute for value3. 
+								//option(value=value) #{value}
+						//input element 		
+						input(type='submit' value='Submit' )
+
+					table(id='mytable')
+						tr(height="50px")
+							th
+								font_in_th ＼
+							th
+								font_in_th Sensor								
+							th
+								font_in_th City
+							th
+								font_in_th Serial
+							th
+								font_in_th Location
+							th
+								font_in_th Lat	
+							th
+								font_in_th Lon
+						each sensor, i in sensors	
+							tr.sensorRow(data-sensorname=sensor.name,data-sensorloc=sensor.Location)
+								td #{sensor.number}
+								td(id='sensorname_'+i) #{sensor.name}
+								td #{sensor.city}
+								td #{sensor.serial}
+								td(id='sensorLoc_'+i) #{sensor.Location}
+								td(id='sensorLat_'+i) #{sensor.Lat}
+								td(id='sensorLon_'+i) #{sensor.Lon}
+
+									
+			section(id="content")
+				h3 Location
+				style(type="text/css")
+					#container { height: 60%;width:30%;float:right; position:relative; top:20px; }
+					#googleMap { max-width: none ;}
+					#word { height: 0px;width:80px; position:relative; left 400px; font-weight:bolder;}
+					.gm-style-iw + div {display: none;}
+				<div id="googleMap" ></div>
+
+		script.
+			var sizew = 20 ;
+			var sizeh = 20 ;
+			var marks = [] ; //each sensor mark
+			var locationmarks = [] ; // location mark
+			var myLatLng = {lat: 23.500, lng: 120.700};
+			var map =new google.maps.Map(document.getElementById("googleMap"),
+			{
+				center:myLatLng,
+				zoom:7,//越小越遠
+				mapTypeId:google.maps.MapTypeId.SATELLITE/*HYBRID*/
+			});			
+
+			var infowindow = new google.maps.InfoWindow({
+				content: 'Change the zoom level',
+					
+			});
+
+			function initialize()
+			{
+			  /*for(var i=0;i<582;i++)
+			  {
+				var myDivElement = $( "#sensorname_"+i );
+			    console.log(myDivElement.text());
+			  }*/
+			  
+			  
+			  var center_lat='';
+			  var center_lon='';			  
+			  var center_latlon = new google.maps.LatLng(center_lat,center_lon);		  
+
+
+			  
+			  var image_center =new google.maps.MarkerImage(
+				'/yellowstar.png',
+				null, /* size is determined at runtime */
+				null, /* origin is 0,0 */
+				null, /* anchor is bottom center of the scaled image */
+				new google.maps.Size(20,20)
+			  );
+
+			  var image_sensor =new google.maps.MarkerImage(
+				'/palert.png',
+				null, /* size is determined at runtime */
+				null, /* origin is 0,0 */
+				null, /* anchor is bottom center of the scaled image */
+				new google.maps.Size(sizew,sizeh)
+			  );			  		  
+
+			  var image_location =new google.maps.MarkerImage(
+				'/palert.png',
+				null, /* size is determined at runtime */
+				null, /* origin is 0,0 */
+				null, /* anchor is bottom center of the scaled image */
+				new google.maps.Size(70,70)
+			  );
+			  
+			  var marker_location = new google.maps.Marker({
+				position: new google.maps.LatLng(24.588888,121.513055),
+				map: map,
+				icon: image_location,
+				title: "北部" 
+			  });
+			  locationmarks.push(marker_location);
+			  var marker_location = new google.maps.Marker({
+				position: new google.maps.LatLng(24.005573,120.6233),
+				map: map,
+				icon: image_location,
+				title: "中部" 
+			  });			  
+			  locationmarks.push(marker_location);
+			  var marker_location = new google.maps.Marker({
+				position: new google.maps.LatLng(22.7711388888889,120.496527777778),
+				map: map,
+				icon: image_location,
+				title: "南部" 
+			  });
+			  locationmarks.push(marker_location);
+			  var marker_location = new google.maps.Marker({
+				position: new google.maps.LatLng(23.1249722222222,121.228805555556),
+				map: map,
+				icon: image_location,
+				title: "東部" 
+			  });			  
+			  locationmarks.push(marker_location);
+
+			  var marker_center = new google.maps.Marker({
+				position:center_latlon,
+				map: map,
+				icon: image_center,
+				title:"lat:"+''+"  lon:"+'' 
+			  });	
+			  
+			  
+			  for(var i = 0; i<4; i++)
+			  {
+				google.maps.event.addListener(locationmarks[i],'click',function() {
+					
+					switch(this.getTitle())
+					{
+						case "北部" : 
+							map.setCenter(new google.maps.LatLng(25.0034833333333,121.517283333333));	
+						break ;
+						case "中部" : 
+							map.setCenter(new google.maps.LatLng(24.100683,120.689738));	
+						break ;
+						case "南部" : 
+							map.setCenter(new google.maps.LatLng(22.917571,120.453443));	
+						break ;
+						case "東部" : 
+							map.setCenter(new google.maps.LatLng(23.4304166666667,121.348888888889));	
+						break ;
+						
+						
+					}
+					map.setZoom(9) ;
+				});					
+				  
+			  }
+
+			  
+			  for(var i = 0; i<582; i++){
+				var sensor_lat=$( "#sensorLat_"+i ).text();
+				var sensor_lon=$( "#sensorLon_"+i ).text();
+				
+			//	console.log("sensor_lat: "+sensor_lat +" sensor_lon: "+sensor_lon);
+				
+				var sensor_latlon = new google.maps.LatLng(sensor_lat,sensor_lon);
+				var marker_sensor =new google.maps.Marker({
+					position:sensor_latlon,
+					map: map,
+					icon: image_sensor,
+					visible:false,
+					title:$("#sensorname_"+i).text()	
+				})
+				//$(".gm-style").remove();
+				marks.push(marker_sensor);
+
+				google.maps.event.addListener(marks[i],'click',function() {
+					map.setCenter(this.getPosition());
+					k = 1 ;
+					cho = 1 ;
+					var num = marks.indexOf(this);
+					console.log("num= "+num);
+					sensorsloc = $("#sensorLoc_"+num).text() ;
+					sensorsid = this.getTitle() ;		
+					infowindow.setPosition(this.getPosition())
+					infowindow.setContent(sensorsloc);
+					infowindow.open(map);
+					
+				/*	
+					for(var i=0 ;i<marks.length ;i++)
+					{
+						
+						marks[i].setVisible(false);							
+					}	
+					var newIcon =new google.maps.MarkerImage(
+						'/palert.png',
+						null, // size is determined at runtime 
+						null, // origin is 0,0 
+						null, // anchor is bottom center of the scaled image 
+						new google.maps.Size(sizew/2,sizeh/2)
+					);
+					this.setIcon(newIcon);	*/				
+				});	 //mark click event 			
+			  }	//for loop  each point		  
+			  
+			  map.addListener('zoom_changed', function() {
+  
+					  if(map.getZoom() <= 8)
+					  {
+						infowindow.close(map);  
+						//console.log(map.getZoom());
+						for(var i=0 ;i<marks.length ;i++)
+						{
+							marks[i].setVisible(false);							
+						}
+						for(var i=0 ;i<4 ;i++)
+						{
+							locationmarks[i].setVisible(true);						
+						}
+					  }
+					  else if(map.getZoom() >= 9)
+					  {
+						
+						if(blockop !=1)
+						{	
+							console.log("blockop"+blockop);
+							for(var i=0 ;i<marks.length ;i++)
+							{	
+								marks[i].setVisible(true);								
+							}
+							
+						}
+						else if(blockop ==1)
+						{
+							for(var i=0 ;i<marks.length ;i++)
+							{	
+								marks[i].setVisible(true);							
+							}							
+							for(var i=0 ;i<sensornum.length ; i++)
+							{
+								marks[sensornum[i]].setVisible(false);		
+							}
+						}
+						for(var i=0 ;i<4 ;i++)
+						{
+							locationmarks[i].setVisible(false);						
+						}
+						
+					  }  
+				  
+
+				  //console.log(map.getZoom());
+				//infowindow.setContent('Zoom: ' + map.getZoom());
+			  });			  
+			}//initialize()
+			
+			google.maps.event.addDomListener(window, 'load', initialize);
+		//=======================================map script===============================================	
+		
+		script.
+			var k = 0 ; // open or close
+			var cho = 0 ;//chart open or close 
+			$('.sensorRow').click(function() {
+				$this = $(this);
+				sensorsid = $this.data('sensorname');
+				cho = 1 ;
+				
+				for(var i=0 ;i<marks.length;i++)
+				{
+					if(marks[i].getTitle() == sensorsid)
+					{
+						console.log("get : "+ marks[i].getTitle());
+						map.setZoom(10) ;
+						map.setCenter(marks[i].getPosition());
+						sensorsloc = $("#sensorLoc_"+i).text() ;
+						infowindow.setPosition(marks[i].getPosition())
+						infowindow.setContent(sensorsloc);
+						
+						infowindow.open(map);
+						
+						break ; 
+					}
+					
+				}
+				//map.setCenter(this.getPosition());
+				k = 1 ;
+				
+				setInterval(function(){
+					if(k == 1)
+					{
+						console.log("this is lable");
+						k = 0 ;
+					}
+				}, 1000);  //post to server and get data in thread  
+			});
+
+
+		
+		script.
+		    
+			var sensorsid = ' ' ;
+			var sensorsloc = ' ' ;
+			var sensornum = [];
+			var blockop = 0 ; //control visible
+			// jquery selector, get the 'form' element.
+			$('form#sensor').submit(function (e) {
+				sensornum = [];
+				// Disable the default submit event. default make user reflash the web 
+				e.preventDefault();
+				//jquery can find this(form#sensor)'s select element.val 
+				var senname = $('select', this).val();
+
+
+				switch(senname)
+				{
+					case "台南" : 
+						map.setCenter(new google.maps.LatLng(23.18925,120.3423167));	
+					break ;
+					case "屏東" : 
+						map.setCenter(new google.maps.LatLng(22.4271944444444,120.628638888889));	
+					break ;
+					case "高雄" : 
+						map.setCenter(new google.maps.LatLng(22.917571,120.453443));	
+					break ;
+					case "花蓮" : 
+						map.setCenter(new google.maps.LatLng(23.655,121.419277777778));	
+					break ;
+					case "宜蘭" : 
+						map.setCenter(new google.maps.LatLng(24.667806,121.712778));	
+					break ;	
+					case "南投" : 
+						map.setCenter(new google.maps.LatLng(23.8909722222222,120.889527777778));	
+					break ;
+					case "台北" : 
+						map.setCenter(new google.maps.LatLng(25.08363333,121.56565));	
+					break ;
+					case "新北" : 
+						map.setCenter(new google.maps.LatLng(25.08363333,121.56565));	
+					break ;
+					case "台東" : 
+						map.setCenter(new google.maps.LatLng(22.7473055555556,121.151444444444));	
+					break ;
+					case "苗栗" : 
+						map.setCenter(new google.maps.LatLng(24.544611,120.9235));	
+					break ;	
+					case "台中" : 
+						map.setCenter(new google.maps.LatLng(24.204727,120.726523));	
+					break ;		
+					case "嘉義" : 
+						map.setCenter(new google.maps.LatLng(23.4835,120.4867));	
+					break ;	
+					case "新竹" : 
+						map.setCenter(new google.maps.LatLng(24.73568333,121.0883833));	
+					break ;	
+					case "基隆" : 
+						map.setCenter(new google.maps.LatLng(25.124803,121.756741));	
+					break ;	
+					case "桃園" : 
+						map.setCenter(new google.maps.LatLng(24.968239,121.19525));	
+					break ;	
+					case "彰化" : 
+						map.setCenter(new google.maps.LatLng(24.0026,120.4929));	
+					break ;	
+					case "雲林" : 
+						map.setCenter(new google.maps.LatLng(23.7102,120.4416));	
+					break ;						
+					
+					
+				}
+				map.setZoom(10) ;
+				
+
+				$.each($("#mytable tr"), function(i){ 				
+					if(i > 0){
+						
+						
+						var customerId = $(this).find("td").eq(2).html(); 
+						$(this).show();
+						marks[i-1].setVisible(true);
+						
+						if(senname =='全部地點')
+						{
+							blockop  = 0 ;
+							$(this).show();		
+						} 
+
+						else if(senname != customerId)
+						{
+							$(this).hide();
+							marks[i-1].setVisible(false);
+							sensornum.push(i-1);
+							blockop = 1 ;
+							
+						}
+ 
+					}//if first low no delete   
+				});  				
+			}); 		
+			
+			
+			//post
+			
+			var k = 0 ; // open or close
+			
+			var num = new Array ;
+			
+			
+			
+			setInterval(function(){
+			
+				if(k == 1)
+				{
+					k = 0 ;
+				}
+				//console.log("post:"+ sensorsid);
+				if(sensorsid!=" ")
+				{
+					$.post('/sensors/' + sensorsid, function(data) {
+						// data is the response data.
+						num = data ;
+						//console.log(sensorsid);
+					});				
+				}
+			}, 1000);  //post to server and get data in thread  			
+			
+			
+			window.onload = function () {
+
+				var dps = []; // dataPoints
+
+				
+				var xVal = 0;
+				var yVal = 100;	
+				var updateInterval = 1000;
+				var dataLength = 10; // number of dataPoints visible at any point
+				var county = 0 ;
+				var updateChart = function (count) {
+								
+				var chart = new CanvasJS.Chart("chartContainer",{
+					title :{
+						text: "Live waveform"+sensorsloc
+					},
+					 axisX:{
+					  title: "time",
+					  interval: 100,
+					  //prefix: "time "					  
+					 },					
+					axisY:{
+				      minimum: -200,
+					  maximum: 200
+					},					
+					data: [{
+						type: "line",
+						dataPoints: dps 
+					}]
+				});				
+				
+				
+					count = count || 1;
+					// count is number of times loop runs to generate random dataPoints.
+					for (var j = 0; j < count; j++) {
+						yVal = num[j];
+						dps.push({
+							x: xVal,
+							y: parseInt(num[county])
+						});
+						xVal = xVal + 1;
+						//xVal++;
+						county = (county + 1) % 100 ;
+						console.log("county= "+county);
+						console.log("xVal= "+xVal);
+					};
+				//console.log('num.length/2= '+dps.length/2);
+					if (dps.length > 1000)
+					{
+						for (var j = 0; j < 10; j++)
+						dps.shift();				
+					}
+					chart.render();		
+				};
+				// generates first set of dataPoints
+				updateChart(99); 
+				// update chart after specified time. 
+				setInterval(function(){
+					if(cho == 1 )
+					{
+						updateChart(dataLength) ;	
+					}
+					
+				}, 100); 
+			}//chart
+		div(id='date') 	
+			
+		
